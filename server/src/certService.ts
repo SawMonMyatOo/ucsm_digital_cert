@@ -1,6 +1,7 @@
-// server/src/certService.ts — issue + verify (single source of truth)
+﻿// server/src/certService.ts â€” issue + verify (single source of truth)
 import type { JsonDatabaseService } from './db.js';
 import { documentHashOf, randomToken, signString, signingInfo, verifyString } from './crypto.js';
+import { env } from './env.js';
 
 export interface Signatory { name: string; organization: string }
 export interface CertificateRecord {
@@ -31,7 +32,7 @@ export interface IssueInput {
 }
 
 export async function issueCertificate(db: JsonDatabaseService, input: IssueInput): Promise<CertificateRecord> {
-  const settings = await db.readObject<SettingsShape>('settings', defaultSettings(''));
+  const settings = await db.readObject<SettingsShape>('settings', defaultSettings(env.VERIFY_BASE_URL));
   const serial = settings.nextSerial;
   settings.nextSerial += 1;
   await db.writeObject('settings', settings);
@@ -91,7 +92,7 @@ export async function verifyCertificate(db: JsonDatabaseService, certificateId: 
 }
 
 async function bumpStats(db: JsonDatabaseService, key: 'valid' | 'revoked' | 'notFound' | 'invalid' | 'total'): Promise<void> {
-  const s = await db.readObject<SettingsShape>('settings', defaultSettings(''));
+  const s = await db.readObject<SettingsShape>('settings', defaultSettings(env.VERIFY_BASE_URL));
   s.stats[key] += 1; s.stats.total += 1;
   await db.writeObject('settings', s);
 }

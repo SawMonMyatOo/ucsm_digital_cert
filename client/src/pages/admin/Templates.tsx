@@ -33,7 +33,26 @@ export function Templates() {
     const updated = await api.saveTemplate(current.id, current);
     setCurrent(updated);
     setTemplates((t) => t.map((x) => (x.id === updated.id ? updated : x)));
-    setSaved('Saved ✓');
+    setSaved('Template saved');
+    setTimeout(() => setSaved(''), 2000);
+  };
+
+  const create = async (): Promise<void> => {
+    const t = await api.createTemplate();
+    setTemplates((prev) => [...prev, t]);
+    setCurrent(t);
+    setSaved('New template created — give it a name, then Save');
+    setTimeout(() => setSaved(''), 3000);
+  };
+
+  const remove = async (): Promise<void> => {
+    if (!current) return;
+    if (!window.confirm(`Delete template "${current.name}"?\nThis cannot be undone.`)) return;
+    await api.deleteTemplate(current.id);
+    const next = templates.filter((t) => t.id !== current.id);
+    setTemplates(next);
+    setCurrent(next[0] ?? null);
+    setSaved('Template deleted');
     setTimeout(() => setSaved(''), 2000);
   };
 
@@ -41,10 +60,18 @@ export function Templates() {
     <div className="grid gap-8 xl:grid-cols-[380px_1fr]">
       <section className="card h-fit p-6">
         <h2 className="font-display text-lg font-bold text-navy">Template Editor</h2>
-        <label className="label mt-3" htmlFor="t">Template</label>
-        <select id="t" className="input" value={current?.id ?? ''} onChange={(e) => setCurrent(templates.find((t) => t.id === e.target.value) ?? null)}>
-          {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-        </select>
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <div className="min-w-[160px] flex-1">
+            <label className="label" htmlFor="t">Template</label>
+            <select id="t" className="input" value={current?.id ?? ''} onChange={(e) => setCurrent(templates.find((t) => t.id === e.target.value) ?? null)}>
+              {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button type="button" className="btn-outline whitespace-nowrap px-2 py-1 text-xs" onClick={() => void create()}>New</button>
+            <button type="button" className="btn-danger whitespace-nowrap px-2 py-1 text-xs" disabled={!current} onClick={() => void remove()}>Delete</button>
+          </div>
+        </div>
         {current && (
           <div className="mt-4 grid gap-3">
             <div><label className="label" htmlFor="n">Name</label><input id="n" className="input" value={current.name} onChange={(e) => set('name', e.target.value)} /></div>
@@ -56,20 +83,26 @@ export function Templates() {
                 <input id="s" type="number" min={36} max={96} className="input" value={current.recipientSize} onChange={(e) => set('recipientSize', Number(e.target.value))} /></div>
             <div><label className="label" htmlFor="v">Verification text</label><input id="v" className="input" value={current.verificationText} onChange={(e) => set('verificationText', e.target.value)} /></div>
             <div className="space-y-3 rounded border border-gold/30 bg-ivory/50 p-3 text-xs">
-              <p className="font-semibold text-navy">Certificate Assets & Images</p>
-              <p className="text-ink/70">
-                You can copy files directly to <code className="rounded bg-black/5 px-1 py-0.5">client/public/assets/</code> or{' '}
-                <code className="rounded bg-black/5 px-1 py-0.5">data/uploads/</code>, or upload them below.
-              </p>
-              {(['background', 'signatureImage', 'emblem'] as const).map((k) => (
+              <div>
+                <p className="font-semibold text-navy">Certificate Assets & Images</p>
+                <p className="mt-1 text-ink/70">
+                  These are the images displayed on the certificate. Use <span className="font-semibold text-ink">Upload</span> to choose a file from your computer, or type the file location if the image is already stored in the system.
+                </p>
+              </div>
+              {([
+                ['background', 'Background image', 'the main design printed behind the certificate text'],
+                ['signatureImage', 'Signature image', 'the scanned signature shown at the bottom'],
+                ['emblem', 'Emblem / logo', 'the university emblem shown at the top']
+              ] as const).map(([k, label, hint]) => (
                 <div key={k} className="space-y-1">
-                  <label className="label capitalize">{k}</label>
+                  <label className="label">{label}</label>
+                  <p className="text-[10px] leading-snug text-ink/55">{hint}</p>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       className="input text-xs"
                       value={current[k] ?? ''}
-                      placeholder={`e.g. /assets/${k}.png`}
+                      placeholder="Paste the image location, or click Upload"
                       onChange={(e) => set(k, e.target.value as Template[typeof k])}
                     />
                     <label className="btn-outline cursor-pointer whitespace-nowrap px-2 py-1 text-xs">
@@ -84,8 +117,16 @@ export function Templates() {
                   </div>
                   {current[k] && (
                     <div className="mt-1 flex items-center gap-2">
-                      <img src={current[k]!} alt={k} className="h-7 w-auto max-w-[80px] rounded border border-ink/20 object-contain bg-white" />
+                      <img src={current[k]!} alt={label} className="h-7 w-auto max-w-[80px] rounded border border-ink/20 object-contain bg-white" />
                       <span className="truncate text-[10px] text-ink/60">{current[k]}</span>
+                      <button
+                        type="button"
+                        title={`Remove ${label.toLowerCase()}`}
+                        className="ml-auto shrink-0 rounded border border-red-800/40 px-1.5 py-0.5 text-[10px] text-red-800 hover:bg-red-800 hover:text-white"
+                        onClick={() => set(k, '')}
+                      >
+                        Remove
+                      </button>
                     </div>
                   )}
                 </div>

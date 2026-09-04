@@ -22,9 +22,10 @@ export const defaultTemplate = (): TemplateRecord => ({
     '{{description}}',
     'and for demostrating the spirit of innovation, creativity, and teamwork.'
   ],
-  emblem: '/assets/ucsm_logo.png',
+  // Logo - use the bundled asset path (client will resolve via import)
+  emblem: 'ucsm_logo',
   signatureImage: '/assets/rector-signature.png',
-  background: '/assets/bg_only.png',
+  background: 'bg_only',
   recipientFont: 'script', recipientSize: 64, showQR: true, qrPosition: 'bottom-right',
   certIdPosition: 'bottom-left',
   verificationText: 'Digitally Verified',

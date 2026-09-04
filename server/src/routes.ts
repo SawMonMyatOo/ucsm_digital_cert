@@ -14,7 +14,7 @@ import {
   defaultSettings, issueCertificate, verifyCertificate,
   type CertificateRecord, type SettingsShape, type VerifyResult
 } from './certService.js';
-import { seed, type TemplateRecord } from './seed.js';
+import { defaultTemplate, seed, type TemplateRecord } from './seed.js';
 import { env } from './env.js';
 
 interface UserRow { id: string; username: string; passwordHash: string }
@@ -205,6 +205,21 @@ export function buildRoutes(db: JsonDatabaseService, uploadsDir: string): Router
     res.json(await db.readArray<TemplateRecord>('templates'));
   }));
 
+  api.post('/templates', auth, csrf, json({ limit: '10kb' }), h(async (req, res) => {
+    const b = sanitizeDeep(req.body ?? {}) as { name?: unknown };
+    const name = cleanStr(b.name, 120) || 'Untitled Template';
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'template';
+    const template: TemplateRecord = {
+      ...defaultTemplate(),
+      id: `${slug}-${Date.now().toString(36)}`,
+      name,
+      updatedAt: new Date().toISOString()
+    };
+    await db.insert('templates', template);
+    await audit(db, { action: 'TEMPLATE_CREATED', actor: req.user?.username ?? '?', ip: req.ip, userAgent: req.headers['user-agent'] });
+    res.status(201).json(template);
+  }));
+
   api.put('/templates/:id', auth, csrf, json({ limit: '50kb' }), h(async (req, res) => {
     const b = sanitizeDeep(req.body ?? {}) as Partial<TemplateRecord>;
     const allowed: (keyof TemplateRecord)[] = ['name', 'heading', 'title', 'presentedToText', 'bodyTemplate', 'emblem', 'signatureImage', 'background', 'recipientFont', 'recipientSize', 'showQR', 'qrPosition', 'certIdPosition', 'verificationText', 'signatoryLabel', 'issueDateLabel'];
@@ -217,6 +232,16 @@ export function buildRoutes(db: JsonDatabaseService, uploadsDir: string): Router
     if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
     await audit(db, { action: 'TEMPLATE_UPDATED', actor: req.user?.username ?? '?', ip: req.ip, userAgent: req.headers['user-agent'] });
     res.json(updated);
+  }));
+
+  api.delete('/templates/:id', auth, csrf, h(async (req, res) => {
+    const id = cleanStr(req.params.id, 60);
+    const inUse = await db.findOne<CertificateRecord>('certificates', (c) => c.templateId === id);
+    if (inUse) { res.status(409).json({ error: 'This template is used by issued certificates and cannot be deleted' }); return; }
+    const removed = await db.delete<TemplateRecord>('templates', id);
+    if (!removed) { res.status(404).json({ error: 'Not found' }); return; }
+    await audit(db, { action: 'TEMPLATE_DELETED', actor: req.user?.username ?? '?', ip: req.ip, userAgent: req.headers['user-agent'] });
+    res.json({ ok: true });
   }));
 
   /* ---------- exports (never leaks secrets) ---------- */

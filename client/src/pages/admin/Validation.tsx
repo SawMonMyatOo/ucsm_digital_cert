@@ -12,9 +12,9 @@ export function Validation() {
   return (
     <div className="max-w-2xl">
       <h2 className="font-display text-lg font-bold text-navy">Certificate Validation</h2>
-      <div className="mt-4 flex gap-2">
-        <input className="input" aria-label="Certificate ID" placeholder="UCSM-2026-000001" value={id} onChange={(e) => setId(e.target.value)} />
-        <button type="button" className="btn-gold" onClick={() => void run()}>Validate</button>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input className="input flex-1" aria-label="Certificate ID" placeholder="UCSM-2026-000001" value={id} onChange={(e) => setId(e.target.value)} />
+        <button type="button" className="btn-gold justify-center" onClick={() => void run()}>Validate</button>
       </div>
       {result && (
         <section className="card mt-6 p-6 font-serif text-sm">

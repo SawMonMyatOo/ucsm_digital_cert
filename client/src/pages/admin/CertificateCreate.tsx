@@ -61,7 +61,7 @@ export function CertificateCreate() {
             <div><label className="label" htmlFor="ed">Expiry (optional)</label><input id="ed" type="date" className="input" value={form.expiryDate} onChange={set('expiryDate')} /></div>
           </div>
           <div><label className="label" htmlFor="sn">Signatory Name</label><input id="sn" className="input" value={form.signatoryName} onChange={set('signatoryName')} /></div>
-          <div><label className="label" htmlFor="so">Signatory Organization</label><input id="so" className="input" value={form.signatoryOrganization} onChange={set('signatoryName') && set('signatoryOrganization')} /></div>
+          <div><label className="label" htmlFor="so">Signatory Organization</label><input id="so" className="input" value={form.signatoryOrganization} onChange={set('signatoryOrganization')} /></div>
           <div><label className="label" htmlFor="tp">Template</label>
             <select id="tp" className="input" value={form.templateId} onChange={set('templateId')}>
               {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}

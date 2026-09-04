@@ -7,6 +7,7 @@ import { CertificateRenderer, ScaledCertificate } from '../../components/Certifi
 import { ShareButtons } from '../../components/ShareButtons';
 import { VerificationBadge } from '../../components/VerificationBadge';
 import { downloadPDF, downloadPNG } from '../../utils/download';
+import { resolveVerifyUrl } from '../../utils/format';
 
 export function CertificatePage() {
   const { certificateId = '' } = useParams();
@@ -21,10 +22,10 @@ export function CertificatePage() {
     return <p className="p-10 text-center font-display-sc tracking-widest text-red-800">✕ Certificate not found — <Link className="underline" to="/">verify another</Link></p>;
   }
   const verifyToken = data.encryptedId || data.certificate.encryptedId || data.certificate.certificateId;
-  const verifyUrl = `${data.verifyBaseUrl}/verify/${verifyToken}`;
+  const verifyUrl = resolveVerifyUrl(data.verifyBaseUrl, verifyToken);
 
   return (
-    <main className="paper min-h-screen px-4 py-10">
+    <main className="paper min-h-screen px-4 py-6 sm:px-4 sm:py-10">
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <VerificationBadge result={data.result} />
@@ -39,15 +40,15 @@ export function CertificatePage() {
           <ScaledCertificate certificate={data.certificate} template={data.template} verifyUrl={verifyUrl} />
         </div>
 
-        <section className="mt-8 grid gap-6 md:grid-cols-2">
-          <div className="card p-5">
+        <section className="mt-8 grid gap-4 sm:gap-6 md:grid-cols-2">
+          <div className="card p-4 sm:p-5">
             <h2 className="font-display-sc text-sm tracking-widest text-navy">Download</h2>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <button type="button" className="btn-gold" onClick={() => { if (captureRef.current) void downloadPDF(captureRef.current, data.certificate!.certificateId); }}>Download PDF</button>
               <button type="button" className="btn-outline" onClick={() => { if (captureRef.current) void downloadPNG(captureRef.current, data.certificate!.certificateId); }}>Download PNG</button>
             </div>
           </div>
-          <div className="card p-5">
+          <div className="card p-4 sm:p-5">
             <h2 className="font-display-sc text-sm tracking-widest text-navy">Share</h2>
             <div className="mt-3"><ShareButtons verifyUrl={verifyUrl} title={`${data.certificate.certificateType} — ${data.certificate.recipientName}`} /></div>
           </div>

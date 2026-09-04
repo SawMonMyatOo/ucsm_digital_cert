@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Certificate } from '../types';
-import { formatDate } from '../utils/format';
+import { formatDate, resolveVerifyUrl } from '../utils/format';
 import { api } from '../services/api';
 
 interface Props { items: Certificate[]; verifyBaseUrl: string; onChanged: () => void }
@@ -17,7 +17,7 @@ export function CertificateTable({ items, verifyBaseUrl, onChanged }: Props) {
 
   const copyUrl = async (c: Certificate): Promise<void> => {
     const token = c.encryptedId || c.id;
-    await navigator.clipboard.writeText(`${verifyBaseUrl}/verify/${token}`);
+    await navigator.clipboard.writeText(resolveVerifyUrl(verifyBaseUrl, token));
   };
 
   return (

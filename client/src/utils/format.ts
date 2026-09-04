@@ -21,4 +21,11 @@ export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 export const interpolate = (text: string, data: Record<string, string>): string =>
-  text.replace(/\{\{(\w+)\}\}/g, (_, k: string) => data[k] ?? '');
+  text.replace(/\{\{(\w+)\}\}/g, (_, k: string) => data[k] ?? '');
+
+/** Builds an absolute verification URL, falling back to the current origin when base is missing/relative. */
+export function resolveVerifyUrl(baseUrl: string | null | undefined, token: string): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const base = baseUrl && /^https?:\/\//i.test(baseUrl) ? baseUrl.replace(/\/+$/, '') : origin;
+  return `${base}/verify/${token}`;
+}

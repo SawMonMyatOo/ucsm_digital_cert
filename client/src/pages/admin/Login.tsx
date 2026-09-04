@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useSession';
+import ucsmLogo from '../../assets/ucsm_logo.png';
 
 export function Login() {
   const { login } = useAuth();
@@ -20,7 +21,7 @@ export function Login() {
   return (
     <main className="paper flex min-h-screen items-center justify-center px-4">
       <form onSubmit={(e) => { void submit(e); }} className="card w-full max-w-sm border-t-4 border-t-gold p-8">
-        <img src="/src/assets/ucsm_logo.png" alt="UCSM Logo" className="mx-auto h-16 w-16" />
+        <img src={ucsmLogo} alt="UCSM Logo" className="mx-auto h-16 w-16" />
         <h1 className="mt-3 text-center font-display text-xl font-bold text-navy">Administrator Sign In</h1>
         <p className="mb-6 text-center font-display-sc text-[10px] tracking-[0.25em] text-ink/60">CERTIFICATE REGISTRY</p>
         <label className="label" htmlFor="u">Username</label>

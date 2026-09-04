@@ -12,7 +12,7 @@ export function Certificates() {
   useEffect(load, [load]);
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-lg font-bold text-navy">Certificate Registry</h2>
         <Link to="/admin/certificates/create" className="btn-gold">+ Issue Certificate</Link>
       </div>

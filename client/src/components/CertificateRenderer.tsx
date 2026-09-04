@@ -4,6 +4,9 @@ import type { Certificate, Template } from '../types';
 import { formatDate, interpolate } from '../utils/format';
 import { QRCodeImage } from './QRCodeImage';
 import { useScale } from '../hooks/useScale';
+import ucsmLogo from '../assets/ucsm_logo.png';
+import rectorSignature from '../assets/rector-signature.png';
+import bgOnly from '../assets/bg_only.png';
 
 export const DESIGN_W = 1123;
 export const DESIGN_H = 794;
@@ -27,10 +30,21 @@ export const CertificateRenderer = forwardRef<HTMLDivElement, Props>(function Ce
     certificateType: certificate.certificateType
   };
 
-  const bgImage = template.background || '/assets/no_text.png';
-  const hasCustomBg = Boolean(bgImage);
-  const isBgOnly = bgImage.includes('bg_only');
-  const showEmblem = !hasCustomBg || isBgOnly;
+  // Helper function to resolve special asset identifiers
+  const resolveAsset = (asset: string | undefined | null, fallback: string = '/assets/no_text.png'): string => {
+    if (!asset) return fallback;
+
+    // Handle special identifiers from seed data
+    if (asset === 'ucsm_logo') return ucsmLogo;
+    if (asset === 'rector-signature') return rectorSignature;
+    if (asset === 'bg_only') return bgOnly;
+
+    // Otherwise assume it's a full path
+    return asset.startsWith('/') ? asset : `/assets/${asset}`;
+  };
+
+  const bgImage = template.background ? resolveAsset(template.background) : null;
+  const hasCustomBg = !!bgImage;
 
   return (
     <div
@@ -41,7 +55,7 @@ export const CertificateRenderer = forwardRef<HTMLDivElement, Props>(function Ce
       {/* 1. Background layer: uploaded luxury certificate background */}
       {hasCustomBg ? (
         <img
-          src={bgImage}
+          src={bgImage!}
           alt=""
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
@@ -50,7 +64,7 @@ export const CertificateRenderer = forwardRef<HTMLDivElement, Props>(function Ce
         <>
           <FallbackCorners />
           <img
-            src={template.emblem}
+            src={template.emblem ? resolveAsset(template.emblem, ucsmLogo) : ucsmLogo}
             alt=""
             aria-hidden="true"
             className="absolute left-1/2 top-1/2 w-[430px] -translate-x-1/2 -translate-y-1/2 opacity-[0.05] grayscale pointer-events-none"
@@ -65,9 +79,9 @@ export const CertificateRenderer = forwardRef<HTMLDivElement, Props>(function Ce
           {template.heading}
         </h2>
 
-        {/* Under it: UCSM Logo */}
+        {/* Under it: UCSM Logo (falls back to the built-in emblem) */}
         <img
-          src={template.emblem || '/assets/ucsm_logo.png'}
+          src={template.emblem ? resolveAsset(template.emblem, ucsmLogo) : ucsmLogo}
           alt="UCSM emblem"
           className="mt-1 h-[78px] w-[78px] object-contain select-none pointer-events-none"
         />
@@ -132,7 +146,7 @@ export const CertificateRenderer = forwardRef<HTMLDivElement, Props>(function Ce
           <div className="flex flex-col items-center text-center">
             {template.signatureImage ? (
               <img
-                src={template.signatureImage}
+                src={resolveAsset(template.signatureImage)}
                 alt={`Signature of ${certificate.signatory.name}`}
                 className="h-[54px] object-contain"
               />

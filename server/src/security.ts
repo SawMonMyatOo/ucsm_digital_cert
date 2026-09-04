@@ -104,7 +104,7 @@ export async function storeUpload(dir: string, filename: string, mime: string, b
   const base = path.basename(filename);
   if (base !== filename || base.includes('..')) throw new Error('Invalid filename');
   if (ALLOWED[ext] !== mime) throw new Error('File type not allowed');
-  if (body.length > 1024 * 1024) throw new Error('File too large (max 1 MB)');
+  if (body.length > 10 * 1024 * 1024) throw new Error('File too large (max 10 MB)');
   const name = `${crypto.randomUUID()}${ext}`;
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(path.join(dir, name), body);

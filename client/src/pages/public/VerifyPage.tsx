@@ -5,6 +5,7 @@ import { api } from '../../services/api';
 import type { VerifyResponse } from '../../types';
 import { VerificationBadge } from '../../components/VerificationBadge';
 import { formatDate, formatDateTime } from '../../utils/format';
+import ucsmLogo from '../../assets/ucsm_logo.png';
 
 function Check({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -29,7 +30,7 @@ export function VerifyPage() {
     <main className="paper min-h-screen px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <header className="card border-t-4 border-t-gold p-8 text-center">
-          <img src="/assets/ucsm-emblem.png" alt="UCSM emblem" className="mx-auto h-16 w-16" />
+          <img src={ucsmLogo} alt="UCSM logo" className="mx-auto h-16 w-16" />
           <h1 className="mt-3 font-display text-2xl font-bold text-navy">
             {data.result === 'VALID' ? '✓ Authentic Certificate' : data.result === 'REVOKED' ? '✕ Certificate Revoked' : data.result === 'NOT_FOUND' ? '✕ Certificate Not Found' : '✕ Verification Failed'}
           </h1>

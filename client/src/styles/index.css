@@ -1,16 +1,26 @@
 /* client/src/styles/index.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ================= UCSM typography system ================= */
-:root {
+@theme {
+  --color-ivory: #FBF8F0;
+  --color-parchment: #F5EFDF;
+  --color-gold-light: #D9BC6A;
+  --color-gold: #B8912F;
+  --color-gold-dark: #8F6E1F;
+  --color-navy: #0F2038;
+  --color-navy-deep: #0A1626;
+  --color-ink: #161310;
+
   --font-script: 'Amoresa', 'Great Vibes', cursive;
   --font-serif: 'Times New Roman', Times, serif;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-display-sc: 'Playfair Display SC', Georgia, serif;
+
+  --shadow-cert: 0 24px 70px rgba(22, 19, 16, 0.22);
+  --shadow-card: 0 2px 14px rgba(22, 19, 16, 0.08);
 }
 
+/* ================= UCSM typography system ================= */
 /* Amoresa — drop Amoresa-Regular.woff2 into /public/fonts to activate.
    The architecture references only var(--font-script), so no code changes are needed later. */
 @font-face {
@@ -47,7 +57,7 @@
 @layer components {
   .paper {
     /* subtle paper texture */
-    background-color: theme('colors.ivory');
+    background-color: var(--color-ivory);
     background-image:
       repeating-linear-gradient(0deg, rgba(22, 19, 16, 0.015) 0 1px, transparent 1px 3px),
       radial-gradient(ellipse at 50% 40%, rgba(184, 145, 47, 0.05), transparent 70%);
@@ -57,20 +67,23 @@
     @apply h-px bg-gradient-to-r from-transparent via-gold to-transparent;
   }
 
-  .btn {
+  .btn,
+  .btn-gold,
+  .btn-outline,
+  .btn-danger {
     @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-display-sc tracking-wider border transition-colors;
   }
 
   .btn-gold {
-    @apply btn bg-gold text-white border-gold-dark hover:bg-gold-dark;
+    @apply bg-gold text-white border-gold-dark hover:bg-gold-dark;
   }
 
   .btn-outline {
-    @apply btn bg-transparent text-navy border-navy/40 hover:border-gold hover:text-gold-dark;
+    @apply bg-transparent text-navy border-navy/40 hover:border-gold hover:text-gold-dark;
   }
 
   .btn-danger {
-    @apply btn bg-transparent text-red-800 border-red-800/40 hover:bg-red-800 hover:text-white;
+    @apply bg-transparent text-red-800 border-red-800/40 hover:bg-red-800 hover:text-white;
   }
 
   .input {

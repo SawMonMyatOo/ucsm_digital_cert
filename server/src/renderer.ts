@@ -152,15 +152,15 @@ export async function generateCertificatePdf(
     .png()
     .toBuffer();
 
-  // 5. Wrap in PDF
+  // 5. Wrap in PDF (page sized exactly to A4 landscape)
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: [W, H], margin: 0 });
+    const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 0 });
     const chunks: Buffer[] = [];
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    doc.image(compositeImage, 0, 0, { width: W, height: H });
+    doc.image(compositeImage, 0, 0, { width: doc.page.width, height: doc.page.height });
     doc.end();
   });
 }

@@ -32,7 +32,9 @@ export const api = {
   download: (id: string) => request<{ certificate: Certificate; template: Template | null }>(`/certificates/${id}/download`),
 
   templates: () => request<Template[]>('/templates'),
+  createTemplate: (name?: string) => request<Template>('/templates', { method: 'POST', body: JSON.stringify({ name }) }),
   saveTemplate: (id: string, body: Partial<Template>) => request<Template>(`/templates/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  deleteTemplate: (id: string) => request<{ ok: boolean }>(`/templates/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   uploadImage: async (file: File): Promise<string> => {
     const res = await fetch('/api/uploads/image', {
       method: 'POST', credentials: 'include', body: file,

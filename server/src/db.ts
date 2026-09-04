@@ -85,4 +85,14 @@ export class JsonDatabaseService {
   async findOne<T>(name: string, pred: (row: T) => boolean): Promise<T | null> {
     return (await this.readArray<T>(name)).find(pred) ?? null;
   }
+
+  async delete<T extends { id: string }>(name: string, id: string): Promise<boolean> {
+    return this.withLock(name, async () => {
+      const rows = await this.readArray<T>(name);
+      const next = rows.filter((r) => r.id !== id);
+      if (next.length === rows.length) return false;
+      await this.atomicWrite(this.file(name), next);
+      return true;
+    });
+  }
 }
