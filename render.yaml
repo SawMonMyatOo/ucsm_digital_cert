@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: ucsm-certificates
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: .
+    buildCommand: |
+      npm install
+      npm --prefix server install
+      npm --prefix client install
+      npm --prefix client run build
+      npm --prefix server run build
+    startCommand: npm --prefix server run start
+    healthCheckPath: /api/public/settings
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SIGNING_KEY_PASSPHRASE
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: VERIFY_BASE_URL
+        sync: false
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

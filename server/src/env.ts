@@ -20,6 +20,6 @@ export const env = {
   SESSION_SECRET: required(process.env.SESSION_SECRET, 'SESSION_SECRET'),
   SIGNING_KEY_PASSPHRASE: required(process.env.SIGNING_KEY_PASSPHRASE, 'SIGNING_KEY_PASSPHRASE'),
   ENCRYPTION_KEY: required(process.env.ENCRYPTION_KEY, 'ENCRYPTION_KEY'),
-  DATA_DIR: path.resolve(process.cwd(), '..', 'data'),
+  DATA_DIR: process.env.DATA_DIR ?? path.resolve(process.cwd(), '..', 'data'),
   get production(): boolean { return this.NODE_ENV === 'production'; }
 };

@@ -46,7 +46,7 @@ app.use('/api/uploads', express.static(uploadsDir, {
 app.use('/api', buildRoutes(db, uploadsDir));
 
 // Serve built client in production
-const dist = path.resolve(process.cwd(), '..', 'client', 'dist');
+const dist = path.resolve(__dirname, '..', '..', 'client', 'dist');
 if (fs.existsSync(dist)) {
   app.use(express.static(dist));
   app.use((req, res, next) => {
