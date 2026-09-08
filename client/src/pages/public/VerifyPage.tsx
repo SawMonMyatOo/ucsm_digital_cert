@@ -58,7 +58,7 @@ export function VerifyPage() {
         )}
 
         <p className="mt-6 text-center text-sm">
-          <Link className="btn-outline" to={c ? `/certificate/${c.certificateId}` : '/'}>{c ? 'View certificate' : 'Back to home'}</Link>
+          <Link className="btn-outline" to={c ? `/certificate/${data.encryptedId || c.certificateId}` : '/'}>{c ? 'View certificate' : 'Back to home'}</Link>
         </p>
       </div>
     </main>

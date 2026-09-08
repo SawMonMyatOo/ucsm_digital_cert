@@ -10,11 +10,16 @@ const required = (v: string | undefined, name: string): string => {
   return v;
 };
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export const env = {
   NODE_ENV: process.env.NODE_ENV ?? 'development',
   PORT: Number(process.env.PORT ?? 4000),
-  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
-  VERIFY_BASE_URL: process.env.VERIFY_BASE_URL ?? 'http://localhost:5173',
+  // Never default to localhost in production — the server resolves the real public
+  // origin from the incoming request (or RENDER_EXTERNAL_URL) when these are empty.
+  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN ?? (isProd ? '' : 'http://localhost:5173'),
+  VERIFY_BASE_URL: process.env.VERIFY_BASE_URL ?? (isProd ? '' : 'http://localhost:5173'),
+  RENDER_EXTERNAL_URL: process.env.RENDER_EXTERNAL_URL ?? '',
   ADMIN_USERNAME: process.env.ADMIN_USERNAME ?? 'admin',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
   SESSION_SECRET: required(process.env.SESSION_SECRET, 'SESSION_SECRET'),

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { Certificate, VerifyResponse } from '../../types';
-import { formatDate, formatDateTime } from '../../utils/format';
+import { formatDate, formatDateTime, resolveVerifyUrl } from '../../utils/format';
 
 export function CertificateDetail() {
   const { id = '' } = useParams();
@@ -29,7 +29,7 @@ export function CertificateDetail() {
         </dl>
         <div className="mt-5 flex flex-wrap gap-2">
           <Link className="btn-outline" to={`/certificate/${cert.encryptedId || cert.certificateId}`}>Open / Download</Link>
-          <button type="button" className="btn-gold" onClick={() => void navigator.clipboard.writeText(`${window.location.origin}/verify/${cert.encryptedId || cert.certificateId}`)}>Copy Verification Link</button>
+          <button type="button" className="btn-gold" onClick={() => void navigator.clipboard.writeText(resolveVerifyUrl(undefined, cert.encryptedId || cert.certificateId))}>Copy Verification Link</button>
           {cert.status === 'VALID' && (
             <button type="button" className="btn-danger" onClick={() => { if (window.confirm('Revoke?')) void api.revoke(cert.id).then(() => setCert({ ...cert, status: 'REVOKED' })); }}>Revoke</button>
           )}

@@ -32,7 +32,7 @@ app.use(helmet({
     }
   }
 }));
-app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+app.use(cors({ origin: env.CLIENT_ORIGIN || false, credentials: true }));
 app.use(cookieParser());
 app.use(apiLimiter);
 app.disable('x-powered-by');

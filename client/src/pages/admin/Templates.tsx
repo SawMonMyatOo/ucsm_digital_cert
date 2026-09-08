@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import type { Certificate, Template } from '../../types';
 import { ScaledCertificate } from '../../components/CertificateRenderer';
+import { resolveVerifyUrl } from '../../utils/format';
 
 const SAMPLE: Certificate = {
   id: 'sample', certificateId: 'UCSM-2026-000000', recipientName: 'Saw Mon Myat Oo', recipientEmail: null,
@@ -140,7 +141,7 @@ export function Templates() {
       </section>
       <section aria-label="Template preview">
         <h2 className="mb-3 font-display-sc text-sm tracking-widest text-navy">PREVIEW</h2>
-        {current && <div className="shadow-cert"><ScaledCertificate certificate={SAMPLE} template={current} verifyUrl="https://verify.ucsmsc.org/verify/UCSM-2026-000001" /></div>}
+        {current && <div className="shadow-cert"><ScaledCertificate certificate={SAMPLE} template={current} verifyUrl={resolveVerifyUrl(undefined, 'preview')} /></div>}
       </section>
     </div>
   );

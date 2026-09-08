@@ -1,5 +1,5 @@
 // server/src/routes.ts
-import { Router, json, raw, type Response } from 'express';
+import { Router, json, raw, type Request, type Response } from 'express';
 import argon2 from 'argon2';
 import type { JsonDatabaseService } from './db.js';
 import { audit } from './audit.js';
@@ -25,6 +25,36 @@ const h = (fn: (req: AuthedRequest, res: Response) => Promise<void>) =>
       res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+const LOCALHOST_RE = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i;
+
+/** Returns a usable absolute http(s) base URL, or '' when unset/invalid/localhost-in-prod. */
+function usableUrl(url: string | null | undefined): string {
+  const u = (url ?? '').trim();
+  if (!u || !/^https?:\/\//i.test(u)) return '';
+  if (env.production && LOCALHOST_RE.test(u)) return '';
+  return u.replace(/\/+$/, '');
+}
+
+/** Derives the caller's public origin from forward proxy headers / Host. */
+function publicOrigin(req: Request): string {
+  const proto = (req.headers['x-forwarded-proto'] as string | undefined)?.split(',')[0]?.trim() || (req.secure ? 'https' : 'http');
+  const host = (req.headers['x-forwarded-host'] as string | undefined)?.split(',')[0]?.trim() || req.headers.host || '';
+  return host ? `${proto}://${host}` : '';
+}
+
+/**
+ * Resolves the base URL used for verification/share links. Priority:
+ * admin-configured setting (unless localhost in prod) → VERIFY_BASE_URL →
+ * Render's deployed URL → the actual origin of the incoming request.
+ * This guarantees share links/QR codes point at the live domain, never localhost.
+ */
+function resolveVerifyBaseUrl(req: Request, settings: SettingsShape): string {
+  return usableUrl(settings.verifyBaseUrl)
+    || usableUrl(env.VERIFY_BASE_URL)
+    || usableUrl(env.RENDER_EXTERNAL_URL)
+    || publicOrigin(req);
+}
 
 export async function ensureAdmin(db: JsonDatabaseService): Promise<void> {
   const users = await db.readArray<UserRow>('users');
@@ -89,11 +119,14 @@ export function buildRoutes(db: JsonDatabaseService, uploadsDir: string): Router
     const template = await db.findOne<TemplateRecord>('templates',
       (t) => t.id === (result.certificate?.templateId ?? ''));
     const encryptedId = result.certificate?.certificateId ? encryptId(result.certificate.certificateId) : null;
-    res.json({ ...result, template, verifyBaseUrl: settings.verifyBaseUrl, encryptedId });
+    res.json({ ...result, template, verifyBaseUrl: resolveVerifyBaseUrl(req, settings), encryptedId });
   }));
 
-  api.get('/public/settings', (_req, res) => {
-    res.json({ orgName: 'University of Computer Studies, Mandalay', verifyBaseUrl: env.VERIFY_BASE_URL });
+  api.get('/public/settings', (req, res) => {
+    res.json({
+      orgName: 'University of Computer Studies, Mandalay',
+      verifyBaseUrl: resolveVerifyBaseUrl(req, defaultSettings(env.VERIFY_BASE_URL))
+    });
   });
 
   /* ---------- uploads (admin images: backgrounds, signatures, emblems) ---------- */
@@ -126,7 +159,7 @@ export function buildRoutes(db: JsonDatabaseService, uploadsDir: string): Router
         return {
           ...c,
           encryptedId,
-          verifyUrl: `${settings.verifyBaseUrl}/verify/${encryptedId}`
+          verifyUrl: `${resolveVerifyBaseUrl(req, settings)}/verify/${encryptedId}`
         };
       });
     res.json({ items, templates, settings });
@@ -270,7 +303,7 @@ export function buildRoutes(db: JsonDatabaseService, uploadsDir: string): Router
           status: c.status,
           signatory: c.signatory.name,
           encryptedId: encryptedToken,
-          verificationLink: `${settings.verifyBaseUrl}/verify/${encryptedToken}`
+          verificationLink: `${resolveVerifyBaseUrl(req, settings)}/verify/${encryptedToken}`
         };
       });
     await audit(db, { action: 'EXPORT', actor: req.user?.username ?? '?', ip: req.ip, userAgent: req.headers['user-agent'] });

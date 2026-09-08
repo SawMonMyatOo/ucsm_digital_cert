@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { Certificate, Template } from '../../types';
 import { ScaledCertificate } from '../../components/CertificateRenderer';
+import { resolveVerifyUrl } from '../../utils/format';
 
 const blank = {
   recipientName: '', recipientEmail: '', organization: 'University of Computer Studies, Mandalay',
@@ -74,7 +75,7 @@ export function CertificateCreate() {
 
       <section aria-label="Live preview">
         <h2 className="mb-3 font-display-sc text-sm tracking-widest text-navy">LIVE PREVIEW</h2>
-        {template && <div className="shadow-cert"><ScaledCertificate certificate={draft} template={template} verifyUrl={`https://verify.ucsmsc.org/verify/UCSM-2026-######`} /></div>}
+        {template && <div className="shadow-cert"><ScaledCertificate certificate={draft} template={template} verifyUrl={resolveVerifyUrl(undefined, 'preview')} /></div>}
       </section>
     </div>
   );

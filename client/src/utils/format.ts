@@ -23,9 +23,21 @@ export function formatDateTime(iso: string): string {
 export const interpolate = (text: string, data: Record<string, string>): string =>
   text.replace(/\{\{(\w+)\}\}/g, (_, k: string) => data[k] ?? '');
 
-/** Builds an absolute verification URL, falling back to the current origin when base is missing/relative. */
+const LOCALHOST_RE = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i;
+
+/**
+ * Builds an absolute verification URL.
+ * When the given base is missing/relative, or is a localhost URL while the
+ * viewer is on a real domain, falls back to the current origin. This prevents
+ * share links / QR codes from ever pointing at localhost in production.
+ */
 export function resolveVerifyUrl(baseUrl: string | null | undefined, token: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const base = baseUrl && /^https?:\/\//i.test(baseUrl) ? baseUrl.replace(/\/+$/, '') : origin;
+  let base = '';
+  if (baseUrl && /^https?:\/\//i.test(baseUrl)) {
+    const onRealDomain = !LOCALHOST_RE.test(origin);
+    if (!LOCALHOST_RE.test(baseUrl) || !onRealDomain) base = baseUrl.replace(/\/+$/, '');
+  }
+  if (!base) base = origin;
   return `${base}/verify/${token}`;
 }

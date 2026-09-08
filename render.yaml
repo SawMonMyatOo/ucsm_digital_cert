@@ -27,6 +27,12 @@ services:
       - key: ENCRYPTION_KEY
         generateValue: true
       - key: CLIENT_ORIGIN
-        sync: false
+        fromService:
+          name: ucsm-certificates
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
       - key: VERIFY_BASE_URL
-        sync: false
+        fromService:
+          name: ucsm-certificates
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
